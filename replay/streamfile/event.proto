@@ -1,0 +1,47 @@
+// Copyright 2018 Dan Jacques. All rights reserved.
+// Use of this source code is governed under the MIT License
+// that can be found in the LICENSE file.
+
+syntax = "proto3";
+
+package streamfile;
+
+import "ptypes/duration/duration.proto";
+
+// Packet is an individual packet.
+message Event {
+  // The offset, from 0, of this packet.
+  google.protobuf.Duration offset = 1;
+
+  // A single encoded packet, sent to a device.
+  message Packet {
+    // The index of the device to use.
+    //
+    // Mapping devices to indexes occurs externally.
+    int64 device = 1;
+
+    // The packet contents.
+    oneof contents {
+      // A PixelPusher pixels bitmap.
+      PixelPusherPixels pixelpusher_pixels = 3;
+    }
+  }
+
+  // Event is the content of the event.
+  oneof data {
+    // The event contains a packet.
+    Packet packet = 2;
+  }
+}
+
+// PixelPusherPixels is a set-pixels message for a single strip on a device.
+//
+// The actual pixel bytes are the raw pixel bitmap for the strip. Their meaning
+// depends on the strip's pixel encoding.
+message PixelPusherPixels {
+  // The strip that the pixels are being sent to.
+  int32 strip_number = 1;
+
+  // The raw pixel data for this strip.
+  bytes pixel_data = 2;
+}

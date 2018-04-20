@@ -1,0 +1,66 @@
+# https://github.com/maruel/pre-commit-go configuration file to run checks
+# automatically on commit, on push and on continuous integration service after
+# a push or on merge of a pull request.
+#
+# See https://godoc.org/github.com/maruel/pre-commit-go/checks for more
+# information.
+
+min_version: 0.4.7
+modes:
+  continuous-integration:
+    checks:
+      coverage:
+      - use_global_inference: false
+        use_coveralls: true
+      errcheck:
+      - {}
+      gofmt:
+      - {}
+      goimports:
+      - {}
+      golint:
+      - blacklist: []
+      govet:
+      - {}
+      test:
+      - extra_args:
+        - -v
+        - -race
+    max_duration: 360
+  lint:
+    checks:
+      errcheck:
+      - ignores: Close
+      golint:
+      - blacklist: []
+      govet:
+      - {}
+    max_duration: 15
+  pre-commit:
+    checks:
+      copyright:
+      - header: |-
+          // Copyright 2018 Dan Jacques. All rights reserved.
+          // Use of this source code is governed under the MIT License
+          // that can be found in the LICENSE file.
+      gofmt:
+      - {}
+      test:
+      - {}
+    max_duration: 5
+  pre-push:
+    checks:
+      coverage:
+      - use_global_inference: false
+      goimports:
+      - {}
+      test:
+      - extra_args:
+        - -v
+        - -race
+    max_duration: 15
+
+  ignore_patterns:
+    - vendor
+    - '*.pb.go'
+    - '*.pb_test.go'

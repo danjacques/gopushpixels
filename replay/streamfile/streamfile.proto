@@ -1,0 +1,128 @@
+syntax = "proto3";
+
+package streamfile;
+
+import "ptypes/duration/duration.proto";
+import "ptypes/timestamp/timestamp.proto";
+
+// Metadata is file-level metadata.
+message Metadata {
+  // Version is the version of this file format.
+  enum Version {
+    // UNKNOWN is an unknown version. It is the enum's default value to catch
+    // uninitialized enums.
+    UNKNOWN = 0;
+
+    // V_1 is the first (and only) version of this file.
+    V_1 = 1;
+  }
+  Version version = 1;
+
+  // Minor is the minor version of this file. It is enumerated within Version,
+  // and is used for migration purposes.
+  uint32 minor = 11;
+
+  // Name is the name of this file.
+  string name = 2;
+
+  // DEPRECATED, use "event_file_info" instead!
+  //
+  // The relative paths of event files that compose this stream.
+  //
+  // TODO: Remove this once all files referencing it have been remedied.
+  repeated string event_file = 3;
+
+  // Composite event files.
+  message EventFile {
+    // name is the relative filename of this event file.
+    string name = 1;
+
+    // Compression is the compression used for this event file.
+    Compression compression = 2;
+
+    // A list of device indices in the event file.
+    //
+    // The event file uses internal indices to reference devices. Its internal
+    // indices begin at 0, and map to devices in the Devices list.
+    //
+    // This is a list of those mappings, where the list index (0...n) is the
+    // internal ID of that device and the list value is the index in the
+    // Devices list.
+    repeated int64 device_mapping = 3;
+
+    // Duration is the total duration of the event stream.
+    google.protobuf.Duration duration = 4;
+
+    // Total number of individual events in the file.
+    int64 num_events = 5;
+
+    // Total number of bytes in the file.
+    int64 num_bytes = 6;
+  }
+  repeated EventFile event_file_info = 10;
+
+  // Created is the time when this file was created.
+  google.protobuf.Timestamp created = 4;
+
+  // Duration is the total duration of the event stream.
+  google.protobuf.Duration duration = 5;
+
+  // Total number of individual events in the stream.
+  int64 num_events = 6;
+
+  // Duration is the total duration of the event stream.
+  int64 num_bytes = 7;
+
+  // DEPRECATED, in favor of per-file devices.
+  //
+  // If populated, the first EventFile will use this device list; otherwise
+  // each individual EventFile will have its own devices list.
+  //
+  // TODO: Remove this once all files referencing it have been remedied.
+  repeated Device devices = 8;
+
+  // DEPRECATED, in favor of per-file compression setting.
+  //
+  // If populated, the first EventFile will use this device list; otherwise
+  // each individual EventFile will have its own devices list.
+  //
+  // TODO: Remove this once all files referencing it have been remedied.
+  Compression compression = 9;
+}
+
+// Compression is a supported compression mode.
+enum Compression {
+  SNAPPY = 0;
+  NONE = 1;
+  GZIP = 2;
+}
+
+// Device is information about a device referenced in the event stream.
+message Device {
+  string id = 1;
+
+  // The number of pixels per strip.
+  int64 pixels_per_strip = 2;
+
+  // Strip represents an LED strip in this Device.
+  message Strip {
+    // PixelType is the type of pixel that this strip uses.
+    enum PixelType {
+      RGB = 0;
+      RGBOW = 1;
+    }
+    // IsRgbow is true if this strip uses RGBOW
+    PixelType pixel_type = 1;
+  }
+  repeated Strip strip = 3;
+
+  message Ordinal {
+    // The device's group number.
+    int32 group = 1;
+    // The device's controller number.
+    int32 controller = 2;
+  }
+  // Ordinal is the ordinal for this device. Is ordinal is empty, the device
+  // does not have one (invalid).
+  Ordinal ordinal = 4;
+}
